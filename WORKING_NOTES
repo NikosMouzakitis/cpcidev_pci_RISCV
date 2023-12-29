@@ -1,0 +1,52 @@
+				GUIDE:
+ 
+
+    QEMU   ( sto riscv64-softmmu, there is  qemu-system-riscv64 executable)
+  	git checkout v5.0.0
+	  ./configure --target-list=riscv64-softmmu
+	  make -j $(nproc)
+	  sudo make install
+
+    BUILDROOT ( gia rootfs.ext2:     
+		
+    cd buildroot
+		make qemu_riscv64_virt_defconfig
+		make
+
+
+    OPENSBI
+	  export CROSS-COMPILE=riscv64-liunx-gnu-
+	  make PLATFORM-generic
+	  (make use of the fw_jump.bin)
+
+
+   TO COMPILE LKMs
+   Export CROSS_COMPILE=  and ARCH=riscv  on the shell and then run the Makefile as following.
+		export ARCH=riscv
+		export CROSS_COMPILE=/home/nicko/riscv64-linux/buildroot/output/host/bin/riscv64-buildroot-linux-gnu-
+
+
+
+***********************************************
+sudo /home/nicko/riscv64-linux/qemu/riscv64-softmmu/qemu-system-riscv64 \
+	-bios opensbi/build/platform/generic/firmware/fw_jump.bin \
+	-smp 4 \
+	-machine virt \
+	-m 4096 \
+	-device virtio-net-device,netdev=net0 \
+	-netdev user,id=net0,hostfwd=tcp::22262-:22 \
+	-kernel buildroot/output/images/Image -append "root=/dev/vda console=ttyS0" \
+	-drive file=buildroot/output/images/rootfs.ext2,format=raw,id=hd0 \
+	-device virtio-blk-device,drive=hd0 \
+	-nographic \
+	-device cpcidev \
+
+
+
+***********************************************
+
+GIA DIKO MAS CUSTOM SYSCALL
+modifications at
+output/build/linux-6.1.44/include/linux/syscalls.h
+output/build/linux-6.1.44/include/uapi/asm-generic/unistd.h 
+output/build/linux-6.1.44/arch/riscv/kernel/sys_riscv.c
